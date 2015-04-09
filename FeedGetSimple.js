@@ -27,7 +27,8 @@ function getLastValue(successFn) {
                 dataType : 'json',
                 cache : false,
                 processData : true,
-                async : false, // you have to have this so the data will arrive before display
+	        crossDomain : true,
+                async : true,
                 success : function(jfeed) {
                         successFn(jfeed);
                 },
@@ -48,7 +49,8 @@ function getLastValueFormatted(successFn) {
                 dataType : 'json',
                 cache : false,
                 processData : true,
-                async : false, // you have to have this so the data will arrive before display
+	        crossDomain : true,
+                async : true,
                 success : function(jfeed) {
                         successFn(jfeed);
                 },
@@ -73,7 +75,8 @@ function getLast10(successFn) {
                 dataType : 'json',
                 cache : false,
                 processData : true,
-                async : false, // you have to have this so the data will arrive before display
+	        crossDomain : true,
+                async : true,
                 success : function(jfeed) {
                         successFn(jfeed);
                 },
@@ -130,7 +133,7 @@ function init() {
 
 <body onload=init()>
 <div style="font-size: 13px; font-family: Verdana; padding: 10px 0 0 30px">
-	<div style="font-weight:bold">Last Value:</div>
+    <div style="font-weight:bold">Last Value:</div>
     <div id="lv_time"></div>
     <div id="lv_value"></div>
     <br/>
