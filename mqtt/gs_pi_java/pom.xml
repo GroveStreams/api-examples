@@ -1,0 +1,156 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.grovestreams</groupId>
+	<artifactId>gs_pi_java</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<source>11</source>
+					<target>11</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.4.1</version>
+				<configuration>
+					<shadedArtifactAttached>true</shadedArtifactAttached>
+					<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+					<filters>
+						<filter>
+							<artifact>*:*</artifact>
+							<excludes>
+								<exclude>gspi.properties</exclude>
+								<exclude>log4j.properties</exclude>
+							</excludes>
+						</filter>
+					</filters>
+
+					<transformers>
+						<transformer
+							implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+					</transformers>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<copy
+									file="target/gs_pi_java-0.0.1-SNAPSHOT-jar-with-dependencies.jar"
+									tofile="../../gspi/gspi.jar"
+									overwrite="true" />
+								<copy file="resources/log4j.properties"
+									todir="../../gspi" overwrite="true" />
+								<copy file="resources/gspi.properties"
+									todir="../../gspi" overwrite="true" />
+								<copy file="resources/gspi.sh"
+									todir="../../gspi" overwrite="true" />
+								<chmod dir="../../gspi" perm="+x"
+									includes="*.sh" />
+								<copy file="certs/gd_root.crt"
+									tofile="../../gspi/certs/gd_root.crt"
+									overwrite="true" />
+								<copy file="certs/gencerts.sh"
+									tofile="../../gspi/certs/gencerts.sh"
+									overwrite="true" />
+								<chmod dir="../../gspi/certs" perm="+x"
+									includes="*.sh" />
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+		<!-- DEPENDENCIES VERSIONS -->
+		<slf4j.version>2.0.9</slf4j.version>
+		<pi4j.version>2.3.0</pi4j.version> <!-- 2.4 didn't work this project. The
+		call to shutdown would lockup -->
+	</properties>
+
+
+	<dependencies>
+		<!-- MQTT and JSON -->
+		<dependency>
+			<groupId>org.eclipse.paho</groupId>
+			<artifactId>org.eclipse.paho.mqttv5.client</artifactId>
+			<version>1.2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20230618</version>
+		</dependency>
+		
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.20.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple 
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-simple</artifactId>
+    <version>${slf4j.version}</version>
+</dependency>
+-->
+
+		<!--  Pi4J  -->
+		<dependency>
+			<groupId>com.pi4j</groupId>
+			<artifactId>pi4j-core</artifactId>
+			<version>${pi4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.pi4j</groupId>
+			<artifactId>pi4j-plugin-raspberrypi</artifactId>
+			<version>${pi4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.pi4j</groupId>
+			<artifactId>pi4j-plugin-pigpio</artifactId>
+			<version>${pi4j.version}</version>
+		</dependency>
+	</dependencies>
+</project>
