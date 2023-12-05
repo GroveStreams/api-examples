@@ -1,2 +1,2 @@
 # api-examples
-Code examples of using the GroveStreams RESTful API
+Code examples of using the GroveStreams API
