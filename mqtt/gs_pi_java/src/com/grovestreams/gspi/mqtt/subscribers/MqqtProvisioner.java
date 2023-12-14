@@ -1,4 +1,5 @@
 package com.grovestreams.gspi.mqtt.subscribers;
+import java.io.FileOutputStream;
 /*-
  * #%L
  * **********************************************************************
@@ -27,12 +28,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.json.JSONObject;
 
+import com.grovestreams.gspi.PiMain;
 import com.grovestreams.gspi.mqtt.PiMqttClient;
 import com.grovestreams.gspi.mqtt.util.MqttReply;
 import com.grovestreams.gspi.mqtt.util.Util;
@@ -40,7 +46,7 @@ import com.grovestreams.gspi.mqtt.util.Util;
 public class MqqtProvisioner {
 	private static final Logger LOG = LoggerFactory.getLogger(MqqtProvisioner.class);
 	
-	static final String INSTALL_FILE_NAME = "gspi.zip2";
+	static final String INSTALL_FILE_NAME = "gspi.zip";
 	
 	PiMqttClient mqttClient;
 	static MqttReply mqttReply = new MqttReply();
@@ -55,27 +61,42 @@ public class MqqtProvisioner {
 	
 	public void downloadAndProvision() throws Exception {
 		
-		downloadFile();
+		downloadFile(); 
 		
 		installFile();
-		
-	//	Util.exeCmd(".", "reboot");
+	
+		//Restart so new files are used
+  	    restart();
 	}
 	
+
+	public static void restart() throws IOException, InterruptedException {
+		
+		//Next section will shutdown gspi, but doesn't seem to start it
+		//String fullFilePath = Util.getAppDir() + "/gspi.sh restart";
+		//LOG.info("Restarting gspi so newly installed files are used: {}", fullFilePath);
+		//Util.exeCmd(".", fullFilePath);
+		
+		LOG.info("Rebooting pi");
+		PiMain.shutdownHook();
+		Util.exeCmd(".", "sudo reboot");
+	}
 
 	private void downloadFile() throws Exception {
 		//Make a call to download the installation file from a component file stream
 		// The below call will download the latest file for that stream
+		// The installation file, gspi.zip, must be stored stored in a component file stream: compId=installs, streamId=gspi
 		// It uses the {orgUid}/api/http/{httpApiUrl} call
-		// Substitue {httpApiUrl} withe the call you are making. It's what comes after https://grovestreams.com/api/
-		// Set the other required HTTP info: method (GET, PUT, POST, DELETE), queryString part of url, Headers)
-		// The http call will be assembled in the GS server message broker and forwarded to the webservers using the credentials of the Certificate user reference
+		//   Substitute {httpApiUrl} with the call you are making. It's what comes after https://grovestreams.com/api/
+		//   Set the other required HTTP info: method (GET, PUT, POST, DELETE), queryString part of url, Headers)
+		//   The http call will be assembled in the GS server message broker and forwarded to the web servers using the credentials of the Certificate user reference
 		
 		mqttReply.clear();
 		
 		
 		String topic = mqttClient.getOrgUid() + "/api/http/";
 		//Add the http api's url  call to end of the above topic - the full topic needs to exist within the certificate's policy
+		// Install file is stored in a component file stream: compId=installs streamId=gspi
 		topic += "comp/installs/stream/gspi/feed/file/" + INSTALL_FILE_NAME;
 		
 		JSONObject jobj = new JSONObject();
@@ -96,17 +117,22 @@ public class MqqtProvisioner {
 		//Setup reply 
 		String replyId = MqttReply.prepareForReply(mqttClient, message);
 	
+		LOG.info("Downloading installation file {}", INSTALL_FILE_NAME);
 		mqttClient.publish(topic, message);
 		
-		byte[] payload = mqttReply.waitUntilReply(mqttClient, replyId,  5*60*1000); //timeout is 5 minutes		
+		byte[] payload = mqttReply.waitUntilReply(mqttClient, replyId,  5*60); //timeout is 5 minutes	
+		
+		//The http call downloaded the file as base64 string. Convert it back to bytes
+		byte[] decodedBytes = Base64.getDecoder().decode(payload);
 
 		//Success - save the file
 		String filePathName = getInstallFilePathName();
 		
-	    FileWriter fileWriter = new FileWriter(filePathName);
-	    PrintWriter printWriter = new PrintWriter(fileWriter);
-	    printWriter.print(new String(payload, StandardCharsets.UTF_8));
-		printWriter.close();
+		LOG.info("Writing installation file {}", filePathName);
+
+		
+	    Path path = Paths.get(filePathName);
+		Files.write(path, decodedBytes);
 	}
 	
 	private void installFile() throws IOException, InterruptedException {
@@ -114,7 +140,15 @@ public class MqqtProvisioner {
 		String filePathName = getInstallFilePathName();
 		
 		//Unzip to the directory its in
-		Util.exeCmd(".", "unzip " + filePathName + " -d " + appDir);
+		LOG.info("Unzipping installation file {}", filePathName);
+
+		Util.exeCmd(".", "unzip -o " + filePathName + " -d " + appDir);
+		
+		LOG.info("Setting sh file permissions for executing");
+		Util.exeCmd(".", "chmod +x " + appDir + "/gspi.sh ");
+		String certDir = mqttClient.getCertDir();
+		Util.exeCmd(".", "chmod +x " + certDir + "/gencerts.sh ");
+	
 	}
 
 	private String getInstallFilePathName() {

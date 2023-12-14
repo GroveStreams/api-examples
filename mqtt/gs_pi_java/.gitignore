@@ -1,4 +1,4 @@
-/bin/
-/cache/
 /target/
 /logs/
+/cache/
+/dependency-reduced-pom.xml

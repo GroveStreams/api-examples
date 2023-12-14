@@ -58,9 +58,9 @@ public class PiMain {
 
 
 	public static void main(String[] args) {
-		//System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "INFO");
+		//System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
 
-
+		
 		final String PROPERTY_FILE_NAME = "/gspi.properties";
 
 		try {
@@ -155,7 +155,6 @@ public class PiMain {
 				scheduler.scheduleAtFixedRate(distanceRunner, 0, (int)2, TimeUnit.SECONDS); 
 			}
 			
-			
 			while (mqttClient != null && pi4j != null) {
 				TimeUnit.MILLISECONDS.sleep(500);
 			}
@@ -168,7 +167,7 @@ public class PiMain {
 		}
 	}
 
-	private static void shutdownHook() {
+	public static void shutdownHook() {
 		try {
 			LOG.info("ShutdownHook started");
 			

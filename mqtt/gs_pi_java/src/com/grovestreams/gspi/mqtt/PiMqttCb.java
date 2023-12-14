@@ -110,9 +110,10 @@ public class PiMqttCb implements MqttCallback {
 	@Override
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
 		
+
 		try {
-			//Start a new thread to handle messages arriving
-			// because all messageArrived calls are handled by one thread and a deadlock will occur while waiting for reply
+			//Start a new thread to handle messages arriving because
+			//  all messageArrived calls are handled by one thread and a deadlock will occur while waiting for reply
 			PiMqttCbMsgArrivedRunner maRunner = new PiMqttCbMsgArrivedRunner(mqttClient, topic, message);
 			Thread thread = new Thread(maRunner);
 			thread.setName("PiMessageArrived");

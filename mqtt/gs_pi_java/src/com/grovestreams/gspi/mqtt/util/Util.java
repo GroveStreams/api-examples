@@ -53,7 +53,7 @@ public class Util {
 
 				StringBuilder macAddressBuilder = new StringBuilder();
 				for (int macAddressByteIndex = 0; macAddressByteIndex < macAddressBytes.length; macAddressByteIndex++) {
-					String macAddressHexByte = String.format("%02X", macAddressBytes[macAddressByteIndex]);
+					String macAddressHexByte = String.format("%02x", macAddressBytes[macAddressByteIndex]);
 					macAddressBuilder.append(macAddressHexByte);
 
 					if (macAddressByteIndex != macAddressBytes.length - 1) {
@@ -109,7 +109,7 @@ public class Util {
 				LOG.info("DeviceName from Operating System hostname (/etc/hostname): " + cname);
 			}
 			String cid = getDeviceId(properties);
-			cname = cname + " (" + cid + ")";
+			cname = cname + "(" + cid + ")";
 			
 		}
 
@@ -168,6 +168,9 @@ public class Util {
 	}
 
 	public static String exeCmd(String dir, String command) throws IOException, InterruptedException {
+		
+		LOG.info("Executing command. Dir={}, Command={}", dir, command);
+
 
 		Process exec = Runtime.getRuntime().exec(command, null, new File(dir));
 		exec.waitFor();

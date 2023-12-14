@@ -42,16 +42,21 @@ then
 fi 
 if [[ -z $device_id ]]
 then
+	#Serial number
 	device_id=$(cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2)
 	if [[ -z $device_id ]]
 	then
-		device_id=$"gs_pi"
-	
-	fi 
-fi 
+		#MAC address
+		device_id=$(ifconfig | grep ether | cut -d ' ' -f10)
+		if [[ -z $device_id ]]
+		then
+			device_id=$"gs_pi"
+		fi
+	fi
+fi
 if [[ -z $device_name ]]
 then
-	device_name=$HOSTNAME
+	device_name="$HOSTNAME($device_id)"
 fi 
 
 
@@ -61,7 +66,8 @@ echo "  keystore_pwd=${keystore_pwd}"
 echo "  truststore_pwd=${truststore_pwd}"
 echo "  domain_name=${domain_name}"
 echo "  device_id=${device_id}"
-echo "  device_name=${device_name}"
+echo "  ne]
+=${device_name}"
 
 keystore_name="keystore${cert_ver}.p12"
 cakeystore_name="ca-keystore${cert_ver}.p12"
@@ -74,14 +80,14 @@ rm "$cakeystore_name"
 rm "truststore.p12"
 
 #create a keystore with gs private key and crt - used to sign other keys
-keytool -storetype pkcs12 -keystore "$cakeystore_name" -storepass "$keystore_pwd" -keypass "$keystore_pwd" -alias "${device_name}-ca" -genkeypair -keyalg "RSA" -keysize 2048 -dname "CN=${device_name} (${device_id}) ${domain_name} Certificate Authority, O=version_${cert_ver}" -validity 36000 -ext KeyUsage=digitalSignature,keyCertSign -ext bc=ca:true,PathLen:3
+keytool -storetype pkcs12 -keystore "$cakeystore_name" -storepass "$keystore_pwd" -keypass "$keystore_pwd" -alias "${device_name}-ca" -genkeypair -keyalg "RSA" -keysize 2048 -dname "CN=${device_name} ${domain_name} Certificate Authority, O=version_${cert_ver}" -validity 36000 -ext KeyUsage=digitalSignature,keyCertSign -ext bc=ca:true,PathLen:3
 echo "1"
 
 keytool -storetype pkcs12 -keystore "$cakeystore_name" -storepass "$keystore_pwd" -alias "${device_name}-ca" -exportcert -rfc > "${device_name}-ca${cert_ver}.crt"
 echo "2"
 #generate key pair
 
-keytool -keystore "$keystore_name" -storepass "$keystore_pwd" -keypass "$keystore_pwd" -alias $device_id -genkeypair -keyalg "RSA" -keysize 2048 -dname "CN=${device_name} (${device_id}) ${domain_name}, O=version_${cert_ver}" -validity 36000 -ext bc=ca:false -ext eku=sa,ca -ext san=dns:localhost,ip:127.0.0.1
+keytool -keystore "$keystore_name" -storepass "$keystore_pwd" -keypass "$keystore_pwd" -alias $device_id -genkeypair -keyalg "RSA" -keysize 2048 -dname "CN=${device_name} ${domain_name}, O=version_${cert_ver}" -validity 36000 -ext bc=ca:false -ext eku=sa,ca -ext san=dns:localhost,ip:127.0.0.1
 echo "3"
 #generate csr ($device_id.csr)
 keytool -keystore "$keystore_name" -storepass "$keystore_pwd" -alias $device_id -certreq -file "${device_name}${cert_ver}.csr"

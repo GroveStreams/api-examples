@@ -57,7 +57,7 @@ public class MqqtOrgIdentifier {
 
 		mqttClient.publish(topic, message);
 
-		byte[] payload = mqttReply.waitUntilReply(replyTopic, replyId, 5*60*1000); //timeout is 5 minutes
+		byte[] payload = mqttReply.waitUntilReply(replyTopic, replyId, 5*60); //timeout is 5 minutes
 		
 		mqttClient.unsubscribe(replyTopic);
 	

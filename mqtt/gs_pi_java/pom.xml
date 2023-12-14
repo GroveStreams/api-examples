@@ -61,24 +61,30 @@
 							<target>
 								<copy
 									file="target/gs_pi_java-0.0.1-SNAPSHOT-jar-with-dependencies.jar"
-									tofile="../../gspi/gspi.jar"
+									tofile="../../../../../gspi/gspi.jar"
 									overwrite="true" />
 								<copy file="resources/log4j.properties"
-									todir="../../gspi" overwrite="true" />
+									todir="../../../../../gspi" overwrite="true" />
 								<copy file="resources/gspi.properties"
-									todir="../../gspi" overwrite="true" />
+									todir="../../../../../gspi" overwrite="true" />
 								<copy file="resources/gspi.sh"
-									todir="../../gspi" overwrite="true" />
-								<chmod dir="../../gspi" perm="+x"
+									todir="../../../../../gspi" overwrite="true" />
+								<chmod dir="../../../../../gspi" perm="+x"
 									includes="*.sh" />
 								<copy file="certs/gd_root.crt"
-									tofile="../../gspi/certs/gd_root.crt"
+									tofile="../../../../../gspi/certs/gd_root.crt"
 									overwrite="true" />
 								<copy file="certs/gencerts.sh"
-									tofile="../../gspi/certs/gencerts.sh"
+									tofile="../../../../../gspi/certs/gencerts.sh"
 									overwrite="true" />
-								<chmod dir="../../gspi/certs" perm="+x"
+								<chmod dir="../../../../../gspi/certs" perm="+x"
 									includes="*.sh" />
+								<!--Build the installation file -->
+								<zip destfile="../../../../../gspi/gspi.zip"
+							     basedir="../../../../../gspi"
+							     includes="gspi.jar,*.properties,*.sh,certs/gd_root.crt,certs/gencerts.sh"/>
+							     <copy file="../../../../../gspi/gspi.zip"
+									todir="resources" overwrite="true" />
 							</target>
 						</configuration>
 					</execution>
@@ -98,6 +104,12 @@
 		call to shutdown would lockup -->
 	</properties>
 
+	<repositories>
+	    <repository>
+	        <id>Eclipse Paho Repo</id>
+	        <url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
+	    </repository>
+	</repositories>
 
 	<dependencies>
 		<!-- MQTT and JSON -->

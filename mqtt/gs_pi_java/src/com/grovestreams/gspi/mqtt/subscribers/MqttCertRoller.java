@@ -71,7 +71,7 @@ public class MqttCertRoller {
 		int newCertVer = curCertVer + 1;
 		
 		//1. Generate new certs
-		LOG.info("Roll: Generating new certs...");
+		LOG.info("Roll: Generating new certs (version=" + newCertVer + "...");
 		genCerts(newCertVer);
 		
 		mqttReply.clear();
@@ -83,7 +83,7 @@ public class MqttCertRoller {
 		String replyId = registerCertsWithGs(topic, curCertVer, newCertVer);
 
 		try {
-			 mqttReply.waitUntilReply(mqttClient, replyId,  5*60*1000); //timeout is 5 minutes
+			 mqttReply.waitUntilReply(mqttClient, replyId,  5*60); //timeout is 5 minutes
 		} catch (Exception e) {
 			removeFiles(newCertVer);
 			throw(e);
@@ -133,14 +133,12 @@ public class MqttCertRoller {
 			orgIdentifier.getOrgUid();
 			
 			//worked
-			mqttClientTester.disconnectAndClose();
 			
 		} catch (Exception e) {
 			//Failed Test 
 			return false;
 		} finally {
 			mqttClientTester.disconnectAndClose();
-			mqttClient.setCertVersion(curVer);
 		}	
 		
 		return true;
@@ -185,6 +183,7 @@ public class MqttCertRoller {
 			// Certs being unregistered have to be within authentication cert chain thus - use old certs
 			PiMqttClient mqttClientPreviousVer = new PiMqttClient(mqttClient.getProperties(), deviceId, deviceId+"_unreg");
 			mqttClientPreviousVer.setCertVersion(curCertVer);
+			mqttClientPreviousVer.setOrgUid(mqttClient.getOrgUid());
 			try {
 				mqttClientPreviousVer.connect();
 				JSONObject jobj = new JSONObject();
@@ -203,11 +202,12 @@ public class MqttCertRoller {
 				mqttClientPreviousVer.publish(topic, message);
 				
 				mqttReply.clear();
-				mqttReply.waitUntilReply(mqttClient, replyId, 5 * 60 * 1000); //timeout is 5 minutes
+				mqttReply.waitUntilReply(mqttClient, replyId, 5 * 60); //timeout is 5 minutes
 
-				mqttClientPreviousVer.disconnectAndClose();
+				
 			} finally {
 				mqttClientPreviousVer.setCertVersion(newCertVer);
+				mqttClientPreviousVer.disconnectAndClose();
 			}
 
 		} catch (Exception e) {
@@ -220,7 +220,7 @@ public class MqttCertRoller {
 	private void genCerts(int certVer) throws IOException, InterruptedException {
 		String certDir = mqttClient.getCertDir();
 			
-		String command ="sh gencerts.sh " + certVer;
+		String command ="./gencerts.sh " + certVer;
 		Util.exeCmd(certDir, command);
 	}
 

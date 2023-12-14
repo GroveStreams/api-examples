@@ -110,10 +110,10 @@ public class PiMqttClient {
 			mqttClient.connect(getMqttConnectionOptions());
 			
 			
-			while (!mqttClient.isConnected() && !callback.isConnectionComplete()) {
+			while (!(mqttClient.isConnected() && callback.isConnectionComplete())) {
 				try {
 					
-					if (System.currentTimeMillis() > startTime + CONNECT_TIMEOUT*1000) {
+					if (!mqttClient.isConnected() && System.currentTimeMillis() > startTime + CONNECT_TIMEOUT*1000) {
 						mqttClient.connect(getMqttConnectionOptions());
 						startTime = System.currentTimeMillis();
 					}
@@ -157,45 +157,39 @@ public class PiMqttClient {
 	}
 	
 	public void publish(String topic, MqttMessage message) throws MqttPersistenceException, MqttException {
-        synchronized (this)
-        {
-        	mqttClient.publish(topic, message);
+  
+        mqttClient.publish(topic, message);
         	
-        }
 	}
 
 	public void subscribe(String[] topicFilters, int[] qos) throws MqttPersistenceException, MqttException {
-        synchronized (this)
-        {
-        	mqttClient.subscribe(topicFilters, qos).waitForCompletion();;
-        }
+
+        mqttClient.subscribe(topicFilters, qos).waitForCompletion();;
+        
 	}		
 	
 	public void subscribe(String topic, int qos) throws MqttPersistenceException, MqttException {
-        synchronized (this)
-        {
-        	mqttClient.subscribe(topic, qos).waitForCompletion();
-        }
+
+        mqttClient.subscribe(topic, qos).waitForCompletion();
+        
 	}	
 	
 	public void unsubscribe(String topic) throws MqttPersistenceException, MqttException {
-        synchronized (this)
-        {
-        	mqttClient.unsubscribe(topic);
-        }
+
+        mqttClient.unsubscribe(topic);
+        
 	}	
 	
 	public void setBufferOps() {
-        synchronized (this)
-        {
-			//Buffer messages when MQTT connection is dropped
-	        DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
-	        disconnectedBufferOptions.setBufferEnabled(true);
-	        disconnectedBufferOptions.setBufferSize(10000);
-	        disconnectedBufferOptions.setPersistBuffer(true);
-	        disconnectedBufferOptions.setDeleteOldestMessages(true);
-	        mqttClient.setBufferOpts(disconnectedBufferOptions);
-        }
+
+		//Buffer messages when MQTT connection is dropped
+        DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
+        disconnectedBufferOptions.setBufferEnabled(true);
+        disconnectedBufferOptions.setBufferSize(10000);
+        disconnectedBufferOptions.setPersistBuffer(true);
+        disconnectedBufferOptions.setDeleteOldestMessages(true);
+        mqttClient.setBufferOpts(disconnectedBufferOptions);
+        
 	}
 	
 	////////////////////////////

@@ -76,7 +76,7 @@ public class MqttMySettings {
 			
 			//Use http advanced batch Feed GET api (via mqqt)
 			// https://grovestreams.com/developers/apibatchfeed.html#ag1
-			String topic = mqttClient.getOrgUid() + "/api/http/cid/" + mqttClient.getDeviceId();
+			String topic = mqttClient.getOrgUid() + "/api/http";
 			//Add the http api's url  call to end of the above topic - the topic needs to exist within the certificate's policy!!!!
 			topic += "/feed";
 			
@@ -124,7 +124,7 @@ public class MqttMySettings {
 
 			mqttClient.publish(topic, message);
 			
-			byte[] compressedPayload = mqttReply.waitUntilReply(mqttClient, replyId,  5*60*1000); //timeout is 5 minutes		
+			byte[] compressedPayload = mqttReply.waitUntilReply(mqttClient, replyId,  5*60); //timeout is 5 minutes		
 			byte[] uncompressedPayload = Compressor.uncompressZLib(compressedPayload);
 
 			
