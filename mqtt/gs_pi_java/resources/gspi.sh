@@ -181,10 +181,17 @@ EOF
    return 0; }
 
 function uninstallService {
-   #/usr/lib/insserv/insserv -r $serviceNameLo || return 1
-   rm -f "/etc/systemd/system/$serviceName.service"
+   echo "Stopping and disabling service..."
+   sudo systemctl stop $serviceName.service
+   sudo systemctl disable $serviceName.service
+   echo "Service Disabled. Uninstalling..."
+   
+   rm /etc/systemd/system/$serviceName.service
+   
+   systemctl daemon-reload
+   systemctl reset-failed
 
-   echo $serviceName uninstalled.
+   echo "$serviceName.service uninstalled."
    return 0; }
 
 function main {
