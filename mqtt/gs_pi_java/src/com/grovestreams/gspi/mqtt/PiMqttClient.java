@@ -253,18 +253,24 @@ public class PiMqttClient {
 		String tsPwd =  getTrustStorePwd();
 
 		MqttConnectionOptions connOpts = new MqttConnectionOptions();
+		
+		//set SessionExpiryInterval if cleanStart is set to false or cleanStart will be ignored.
 		//connOpts.setCleanStart(false);
+		//connOpts.setSessionExpiryInterval(60000L);	
 		connOpts.setCleanStart(true); //Set to false for qos1 and qos2 reliability
+		
 		connOpts.setHttpsHostnameVerificationEnabled(false);
 		connOpts.setConnectionTimeout(CONNECT_TIMEOUT);  
 		connOpts.setKeepAliveInterval(65); //Set this low if you don't make frequent publishes. Connections consume resources on the server, but creating/destroying them do too. Balance.
 		connOpts.setTopicAliasMaximum(1000); //Just don't want to overwhelm pi memory if a lot of unique topics are used
-		
+			
 	    Random random = new Random();
-	    int aLittleMore = random.nextInt(21); //Random so that all devices are not reconnecting at the exact same time if there is a "no connection scenario" ending.
+	    int aLittleMore = random.nextInt(21); //Random so that all devices are not reconnecting at the exact same time if there is a "no connection scenario for all" ending.
 		connOpts.setAutomaticReconnect(true);
 		connOpts.setAutomaticReconnectDelay(1, 20 + aLittleMore);
 
+		String[] brokerUrls = properties.getProperty("BROKER_URL").split(",");
+		connOpts.setServerURIs(brokerUrls);
 		
 		if (!this.willTopic.isEmpty()) {
 			connOpts.setWill(willTopic, willMessage);
@@ -291,7 +297,9 @@ public class PiMqttClient {
 	}
 
 	private PiMqttCb createClient() throws SocketException, UnknownHostException, MqttException {
-		String brokerUrl = properties.getProperty("BROKER_URL");
+		String[] brokerUrls = properties.getProperty("BROKER_URL").split(",");
+		LOG.info("MQTT Broker URLs: " + properties.getProperty("BROKER_URL"));
+		String brokerUrl = brokerUrls[0];;
 
 		String clientCacheDirectory = getCacheDir();
 		

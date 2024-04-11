@@ -68,10 +68,20 @@ public class MqttFeedPublisher {
 		mqttClient.publish(topic, message);
 	}
 	
-	public void publish(Reading reading) throws MqttPersistenceException, MqttException {
-		String topic = String.format("%s/feed/cid/%s/sid/%s/data/%s/time/%d", mqttClient.getOrgUid(), mqttClient.getDeviceId(), reading.getStreamId(), reading.getValue().toString(), reading.getTime() );
-	
-		publish(topic);
+	public void publish(Reading reading) throws Exception {
+		//Publishing all of the data could be done with a large topic, that includes the streamId, Time, and Data and no message body, 
+		// but MQTT servers scale better if there are fewer topics to track so we'll reduce the size of the topic for the publish.
+		
+		//Large topic, no message body call:
+		//String topic = String.format("%s/feed/cid/%s/sid/%s/data/%s/time/%d", mqttClient.getOrgUid(), mqttClient.getDeviceId(), reading.getStreamId(), reading.getValue().toString(), reading.getTime() );
+		//publish(topic);
+		
+		//Smaller topic with a message body
+		Readings readings = new Readings();
+		readings.add(reading);
+
+		publish(readings);
+		
 	}
 
 	public void publish(Readings readings) throws Exception {

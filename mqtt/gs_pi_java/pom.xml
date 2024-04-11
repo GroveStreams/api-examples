@@ -112,6 +112,7 @@
 	</repositories>
 
 	<dependencies>
+		
 		<!-- MQTT and JSON -->
 		<dependency>
 			<groupId>org.eclipse.paho</groupId>
@@ -140,13 +141,6 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>${slf4j.version}</version>
 		</dependency>
-<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple 
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-simple</artifactId>
-    <version>${slf4j.version}</version>
-</dependency>
--->
 
 		<!--  Pi4J  -->
 		<dependency>
